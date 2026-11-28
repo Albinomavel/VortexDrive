@@ -33,16 +33,19 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	case tea.KeyPressMsg:
 		switch msg.String() {
 		case "esc":
-			if m.state == stateProblem {
+			switch m.state {
+			case stateProblem:
 				m.state = stateClass
 				m.table = tableClass()
-				return m, nil
+
+			case stateClass:
+				return m, tea.Quit
 			}
-			return m, tea.Quit
 		case "q", "ctrl+c":
 			return m, tea.Quit
 		case "enter":
-			if m.state == stateClass {
+			switch m.state {
+			case stateClass:
 				m.classeSelecionada = m.table.SelectedRow()[0]
 				m.state = stateProblem
 				m.table = tableProblem(m.classeSelecionada)
@@ -100,8 +103,9 @@ func tableProblem(classeSelecionada string) table.Model {
 	columns := []table.Column{
 		{Title: titulo, Width: 50},
 	}
-	rows := []table.Row{
-		{"olá isso é só um teste"},
+	var rows []table.Row
+	for _, problem := range Catalog[classeSelecionada] {
+		rows = append(rows, table.Row{problem.Options})
 	}
 	menuP := table.New(
 		table.WithColumns(columns),
